@@ -1,0 +1,55 @@
+﻿@model IEnumerable<FixPoint.Models.Facility>
+@{
+    ViewData["Title"] = "Facilities";
+}
+
+<div class="fp-page-header">
+    <div>
+        <h1 class="fp-page-title"><i class="bi bi-building me-2 text-warning"></i>Facilities</h1>
+        <p class="fp-page-subtitle">Manage all registered facilities</p>
+    </div>
+    <a asp-controller="Facility" asp-action="Create" class="btn btn-fp-primary">
+        <i class="bi bi-plus-circle me-2"></i>Add Facility
+    </a>
+</div>
+
+<div class="row g-3">
+    @if (!Model.Any())
+    {
+        <div class="col-12">
+            <div class="fp-card text-center py-5">
+                <i class="bi bi-building display-4 text-muted d-block mb-3"></i>
+                <p class="text-muted mb-3">No facilities added yet.</p>
+                <a asp-controller="Facility" asp-action="Create" class="btn btn-fp-primary">Add your first facility</a>
+            </div>
+        </div>
+    }
+    @foreach (var f in Model)
+    {
+        <div class="col-md-6 col-lg-4">
+            <div class="fp-card h-100">
+                <div class="d-flex align-items-start justify-content-between mb-3">
+                    <div style="width:44px;height:44px;background:#fffbeb;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                        <i class="bi bi-building" style="font-size:1.2rem;color:#f59e0b;"></i>
+                    </div>
+                    <div class="d-flex gap-1">
+                        <a asp-controller="Facility" asp-action="Edit" asp-route-id="@f.Id"
+                           class="btn btn-sm btn-fp-outline"><i class="bi bi-pencil"></i></a>
+                        <a asp-controller="Facility" asp-action="Delete" asp-route-id="@f.Id"
+                           class="btn btn-sm btn-fp-outline" style="color:#ef4444;border-color:#fecaca;">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </div>
+                <h6 style="font-weight:600;margin-bottom:0.25rem;">@f.Name</h6>
+                <p style="font-size:0.85rem;color:#6b7280;margin-bottom:0.5rem;">
+                    <i class="bi bi-geo-alt me-1"></i>@f.Location
+                </p>
+                @if (f.Description != null)
+                {
+                    <p style="font-size:0.82rem;color:#9ca3af;margin:0;">@f.Description</p>
+                }
+            </div>
+        </div>
+    }
+</div>

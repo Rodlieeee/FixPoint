@@ -1,0 +1,49 @@
+﻿@using FixPoint.Models
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@if (SignInManager.IsSignedIn(User))
+{
+    var currentUser = await UserManager.GetUserAsync(User);
+    var initials = currentUser?.FullName?.Length > 0
+        ? currentUser.FullName[0].ToString().ToUpper()
+        : "?";
+
+    <ul class="navbar-nav align-items-center gap-2">
+        <li class="nav-item d-flex align-items-center gap-2">
+            <div style="width:32px;height:32px;border-radius:50%;background:#f59e0b;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;color:#111827;">
+                @initials
+            </div>
+            <span style="color:#d1d5db;font-size:0.88rem;">
+                @(currentUser?.FullName ?? "User")
+            </span>
+        </li>
+        <li class="nav-item">
+            <form asp-area="Identity" asp-page="/Account/Logout"
+                  asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })"
+                  method="post">
+                <button type="submit"
+                        style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#d1d5db;border-radius:8px;padding:0.35rem 0.9rem;font-size:0.85rem;cursor:pointer;transition:all 0.2s;">
+                    <i class="bi bi-box-arrow-right me-1"></i>Logout
+                </button>
+            </form>
+        </li>
+    </ul>
+}
+else
+{
+    <ul class="navbar-nav align-items-center gap-2">
+        <li class="nav-item">
+            <a class="nav-link px-3 py-2 rounded" asp-area="Identity" asp-page="/Account/Register">
+                <i class="bi bi-person-plus me-1"></i>Register
+            </a>
+        </li>
+        <li class="nav-item">
+            <a asp-area="Identity" asp-page="/Account/Login"
+               style="background:#f59e0b;color:#111827;border-radius:8px;padding:0.4rem 1rem;font-size:0.88rem;font-weight:600;text-decoration:none;transition:background 0.2s;">
+                <i class="bi bi-box-arrow-in-right me-1"></i>Login
+            </a>
+        </li>
+    </ul>
+}

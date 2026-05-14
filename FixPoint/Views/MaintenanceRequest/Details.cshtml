@@ -1,0 +1,117 @@
+﻿@model FixPoint.Models.MaintenanceRequest
+@{
+    ViewData["Title"] = "Request Details";
+    var sClass = Model.Status == FixPoint.Models.RequestStatus.Open ? "badge-open" :
+                 Model.Status == FixPoint.Models.RequestStatus.InProgress ? "badge-inprogress" :
+                 Model.Status == FixPoint.Models.RequestStatus.Resolved ? "badge-resolved" : "badge-closed";
+    var pClass = Model.Priority == FixPoint.Models.PriorityLevel.Critical ? "badge-critical" :
+                 Model.Priority == FixPoint.Models.PriorityLevel.High ? "badge-high" :
+                 Model.Priority == FixPoint.Models.PriorityLevel.Medium ? "badge-medium" : "badge-low";
+}
+
+<div class="fp-page-header">
+    <div>
+        <h1 class="fp-page-title">
+            <i class="bi bi-clipboard2-pulse me-2 text-warning"></i>Request #@Model.Id
+        </h1>
+        <p class="fp-page-subtitle">@Model.Facility?.Name — @Model.Facility?.Location</p>
+    </div>
+    <div class="d-flex gap-2">
+        @if (User.IsInRole("Admin"))
+        {
+            <a asp-controller="MaintenanceRequest" asp-action="Assign" asp-route-id="@Model.Id"
+               class="btn btn-fp-primary">
+                <i class="bi bi-person-check me-1"></i>Assign Technician
+            </a>
+        }
+        <a asp-controller="MaintenanceRequest" asp-action="Index" class="btn btn-fp-outline">
+            <i class="bi bi-arrow-left me-1"></i>Back
+        </a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="fp-form-card">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <h5 style="font-weight:600;margin:0;">@Model.Title</h5>
+                <div class="d-flex gap-2">
+                    <span class="fp-badge @pClass">@Model.Priority</span>
+                    <span class="fp-badge @sClass">@Model.Status</span>
+                </div>
+            </div>
+
+            <div class="mb-4 p-3"
+                 style="background:#f9fafb;border-radius:10px;border:1px solid #e5e7eb;">
+                <p style="font-size:0.85rem;color:#6b7280;margin-bottom:0.4rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">
+                    Description
+                </p>
+                <p style="margin:0;color:#374151;line-height:1.6;">@Model.Description</p>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-sm-6">
+                    <p style="font-size:0.8rem;color:#9ca3af;margin-bottom:0.2rem;text-transform:uppercase;letter-spacing:0.04em;">Reported By</p>
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="width:28px;height:28px;border-radius:50%;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:600;color:#374151;">
+                            @(Model.ReportedBy?.FullName?.Length > 0 ? Model.ReportedBy.FullName[0].ToString().ToUpper() : "?")
+                        </div>
+                        <span style="font-size:0.9rem;font-weight:500;">@Model.ReportedBy?.FullName</span>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <p style="font-size:0.8rem;color:#9ca3af;margin-bottom:0.2rem;text-transform:uppercase;letter-spacing:0.04em;">Date Submitted</p>
+                    <p style="margin:0;font-size:0.9rem;font-weight:500;">
+                        <i class="bi bi-calendar3 me-1 text-muted"></i>
+                        @Model.CreatedAt.ToString("MMMM dd, yyyy")
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        @if (Model.Assignment != null)
+        {
+            <div class="fp-card"
+                 style="border-left:4px solid #f59e0b;border-radius:12px;">
+                <h6 style="font-weight:600;margin-bottom:1rem;color:#92400e;">
+                    <i class="bi bi-person-gear me-2"></i>Assignment
+                </h6>
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <div style="width:36px;height:36px;border-radius:50%;background:#fffbeb;display:flex;align-items:center;justify-content:center;font-weight:600;color:#b45309;">
+                        @(Model.Assignment.Technician?.FullName?.Length > 0 ? Model.Assignment.Technician.FullName[0].ToString().ToUpper() : "T")
+                    </div>
+                    <div>
+                        <p style="margin:0;font-weight:500;font-size:0.9rem;">@Model.Assignment.Technician?.FullName</p>
+                        <p style="margin:0;font-size:0.78rem;color:#9ca3af;">Technician</p>
+                    </div>
+                </div>
+                <p style="font-size:0.8rem;color:#9ca3af;margin-bottom:0.2rem;">Assigned on</p>
+                <p style="font-size:0.88rem;margin-bottom:0.75rem;">
+                    @Model.Assignment.AssignedAt.ToString("MMM dd, yyyy")
+                </p>
+                @if (Model.Assignment.Notes != null)
+                {
+                    <p style="font-size:0.8rem;color:#9ca3af;margin-bottom:0.2rem;">Notes</p>
+                    <p style="font-size:0.88rem;margin:0;color:#374151;">@Model.Assignment.Notes</p>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="fp-card text-center py-4"
+                 style="border:1px dashed #e5e7eb;">
+                <i class="bi bi-person-dash display-5 text-muted d-block mb-2"></i>
+                <p class="text-muted mb-0" style="font-size:0.88rem;">No technician assigned yet</p>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-controller="MaintenanceRequest" asp-action="Assign" asp-route-id="@Model.Id"
+                       class="btn btn-fp-primary btn-sm mt-3">
+                        <i class="bi bi-person-plus me-1"></i>Assign Now
+                    </a>
+                }
+            </div>
+        }
+    </div>
+</div>

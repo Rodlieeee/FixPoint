@@ -1,0 +1,59 @@
+﻿@model IEnumerable<FixPoint.Models.ApplicationUser>
+@{
+    ViewData["Title"] = "Manage Users";
+}
+
+<div class="fp-page-header">
+    <div>
+        <h1 class="fp-page-title"><i class="bi bi-people me-2 text-warning"></i>Users</h1>
+        <p class="fp-page-subtitle">Manage user roles and permissions</p>
+    </div>
+</div>
+
+<div class="fp-table">
+    <table class="table mb-0">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Email</th>
+                <th>Current Role</th>
+                <th>Change Role</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                var roles = ViewBag.UserRoles[user.Id] as IList<string>;
+                var currentRole = roles != null && roles.Count > 0 ? roles[0] : "None";
+                var roleColor = currentRole == "Admin" ? "badge-critical" :
+                currentRole == "Technician" ? "badge-inprogress" : "badge-open";
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div style="width:34px;height:34px;border-radius:50%;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:0.8rem;color:#374151;">
+                                @(user.FullName?.Length > 0 ? user.FullName[0].ToString().ToUpper() : "?")
+                            </div>
+                            <span style="font-weight:500;">@user.FullName</span>
+                        </div>
+                    </td>
+                    <td style="color:#6b7280;font-size:0.88rem;">@user.Email</td>
+                    <td><span class="fp-badge @roleColor">@currentRole</span></td>
+                    <td>
+                        <form asp-controller="Admin" asp-action="ChangeRole" method="post" class="d-flex gap-2 align-items-center">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="userId" value="@user.Id" />
+                            <select name="newRole" class="form-select form-select-sm" style="width:140px;border-radius:8px;border:1px solid #e5e7eb;">
+                                <option value="Admin">Admin</option>
+                                <option value="Technician">Technician</option>
+                                <option value="User">User</option>
+                            </select>
+                            <button type="submit" class="btn btn-fp-primary btn-sm px-3">
+                                <i class="bi bi-save me-1"></i>Save
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

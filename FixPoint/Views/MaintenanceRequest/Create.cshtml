@@ -1,0 +1,76 @@
+﻿@model FixPoint.Models.MaintenanceRequest
+@{
+    ViewData["Title"] = "Submit Request";
+}
+
+<div class="fp-page-header">
+    <div>
+        <h1 class="fp-page-title"><i class="bi bi-plus-circle me-2 text-warning"></i>New Request</h1>
+        <p class="fp-page-subtitle">Fill out the form below to report a maintenance issue</p>
+    </div>
+    <a asp-controller="MaintenanceRequest" asp-action="Index" class="btn btn-fp-outline">
+        <i class="bi bi-arrow-left me-1"></i> Back
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-7">
+        <div class="fp-form-card">
+            <form asp-controller="MaintenanceRequest" asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3" style="border-radius:8px;"></div>
+
+                <div class="mb-4">
+                    <label class="fp-form-label">Request Title</label>
+                    <input asp-for="Title" class="fp-input form-control" placeholder="e.g. Broken AC Unit in Room 202" />
+                    <span asp-validation-for="Title" class="text-danger" style="font-size:0.8rem;"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label class="fp-form-label">Description</label>
+                    <textarea asp-for="Description" class="fp-input form-control" rows="4"
+                              placeholder="Describe the issue in detail — what happened, when, and how urgent it is..."></textarea>
+                    <span asp-validation-for="Description" class="text-danger" style="font-size:0.8rem;"></span>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="fp-form-label">Facility</label>
+                        <select asp-for="FacilityId" class="fp-input form-select" asp-items="ViewBag.Facilities">
+                            <option value="">— Select Facility —</option>
+                        </select>
+                        <span asp-validation-for="FacilityId" class="text-danger" style="font-size:0.8rem;"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fp-form-label">Priority Level</label>
+                        <select asp-for="Priority" class="fp-input form-select"
+                                asp-items="Html.GetEnumSelectList<FixPoint.Models.PriorityLevel>()"></select>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-fp-primary px-4">
+                        <i class="bi bi-send me-2"></i>Submit Request
+                    </button>
+                    <a asp-controller="MaintenanceRequest" asp-action="Index" class="btn btn-fp-outline px-4">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="fp-card" style="background:#fffbeb;border-color:#fde68a;">
+            <h6 style="color:#92400e;font-weight:600;margin-bottom:1rem;">
+                <i class="bi bi-lightbulb me-2"></i>Tips for a Good Request
+            </h6>
+            <ul style="font-size:0.88rem;color:#78350f;padding-left:1.2rem;margin:0;">
+                <li class="mb-2">Be specific about the <strong>location</strong> of the issue</li>
+                <li class="mb-2">Describe <strong>when</strong> the problem started</li>
+                <li class="mb-2">Set the correct <strong>priority</strong> to help us respond faster</li>
+                <li>Attach any relevant details about the <strong>severity</strong></li>
+            </ul>
+        </div>
+    </div>
+</div>
