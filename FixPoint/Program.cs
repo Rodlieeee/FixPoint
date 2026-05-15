@@ -5,30 +5,82 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// DB
+
+// =========================
+// DATABASE
+// =========================
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Identity — NO .AddDefaultUI()
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+
+// =========================
+// IDENTITY
+// =========================
+builder.Services
+    .AddIdentity<ApplicationUser, IdentityRole>(options =>
+    {
+        options.SignIn.RequireConfirmedAccount = false;
+
+        // Password settings
+        options.Password.RequireDigit = false;
+        options.Password.RequireUppercase = false;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequiredLength = 6;
+    })
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+
+
+// =========================
+// COOKIE SETTINGS
+// =========================
+builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.SignIn.RequireConfirmedAccount = false;
-})
-.AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultTokenProviders();
+    options.LoginPath = "/Identity/Account/Login";
+    options.AccessDeniedPath = "/Home/AccessDenied";
+});
 
+
+// =========================
+// MVC + RAZOR
+// =========================
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// Seed roles + admin
+
+// =========================
+// SEED ROLES + ADMIN
+// =========================
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+
+    var roleManager =
+        services.GetRequiredService<RoleManager<IdentityRole>>();
+
+    string[] roles = { "Admin", "Technician", "User" };
+
+    foreach (var role in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+        {
+            await roleManager.CreateAsync(
+                new IdentityRole(role));
+        }
+    }
+
+    // OPTIONAL:
+    // Your existing seed method
     await SeedData.InitializeAsync(services);
 }
 
+
+// =========================
+// MIDDLEWARE
+// =========================
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -37,13 +89,20 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
 app.UseRouting();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
+
+// =========================
+// ROUTES
+// =========================
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
 app.MapRazorPages();
 
 app.Run();

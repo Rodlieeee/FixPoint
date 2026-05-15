@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FixPoint.Models
 {
@@ -11,11 +10,16 @@ namespace FixPoint.Models
 
         public string? Notes { get; set; }
 
-        // FK → MaintenanceRequest (one-to-one)
+        // Technician feedback
+        public string? FeedbackNotes { get; set; }
+        public string? ProofPhotoPath { get; set; }
+        public DateTime? FeedbackSubmittedAt { get; set; }
+
+        // FK → MaintenanceRequest
         public int MaintenanceRequestId { get; set; }
         public MaintenanceRequest MaintenanceRequest { get; set; }
 
-        // FK → Technician (ApplicationUser)
+        // FK → Technician
         [Required]
         public string TechnicianId { get; set; }
         public ApplicationUser Technician { get; set; }

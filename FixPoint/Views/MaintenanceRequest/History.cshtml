@@ -1,0 +1,98 @@
+﻿@model IEnumerable<FixPoint.Models.MaintenanceRequest>
+
+@{
+    ViewData["Title"] = "Request History";
+}
+
+<div class="fp-page-header">
+    <div>
+        <h1 class="fp-page-title">
+            <i class="bi bi-clock-history me-2 text-success"></i>History
+        </h1>
+        <p class="fp-page-subtitle">
+            Completed maintenance requests
+        </p>
+    </div>
+
+    <a asp-action="Index" class="btn btn-fp-outline">
+        <i class="bi bi-arrow-left me-1"></i>Back to Requests
+    </a>
+</div>
+
+<div class="fp-table">
+    <table class="table mb-0">
+
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Title</th>
+                <th>Facility</th>
+                <th>Technician</th>
+                <th>Priority</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        <i class="bi bi-archive display-5 d-block mb-2"></i>
+                        No completed requests yet.
+                    </td>
+                </tr>
+            }
+
+            @foreach (var r in Model)
+            {
+                var pClass =
+                r.Priority == FixPoint.Models.PriorityLevel.Critical ? "badge-critical" :
+                r.Priority == FixPoint.Models.PriorityLevel.High ? "badge-high" :
+                r.Priority == FixPoint.Models.PriorityLevel.Medium ? "badge-medium" :
+                "badge-low";
+
+                <tr>
+
+                    <td style="color:#9ca3af;font-size:0.8rem;">
+                        #@r.Id
+                    </td>
+
+                    <td style="font-weight:500;">
+                        @r.Title
+                    </td>
+
+                    <td>
+                        <span class="d-flex align-items-center gap-2">
+                            <i class="bi bi-building text-muted"></i>
+                            @(r.Facility?.Name ?? "N/A")
+                        </span>
+                    </td>
+
+                    <td>
+                        @(r.Assignment?.Technician?.FullName ?? "Unassigned")
+                    </td>
+
+                    <td>
+                        <span class="fp-badge @pClass">
+                            @r.Priority
+                        </span>
+                    </td>
+
+                    <td>
+                        <a asp-action="Details"
+                           asp-route-id="@r.Id"
+                           class="btn btn-sm btn-fp-outline"
+                           title="View Details">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                    </td>
+
+                </tr>
+            }
+
+        </tbody>
+
+    </table>
+</div>

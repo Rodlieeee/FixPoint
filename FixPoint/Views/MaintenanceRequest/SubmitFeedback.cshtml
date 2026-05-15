@@ -1,0 +1,136 @@
+﻿@model FixPoint.Models.MaintenanceRequest
+@{
+    ViewData["Title"] = "Submit Feedback";
+}
+
+<div class="fp-page-header">
+    <div>
+        <h1 class="fp-page-title">
+            <i class="bi bi-chat-left-check me-2 text-warning"></i>Submit Feedback
+        </h1>
+        <p class="fp-page-subtitle">Request #@Model.Id — @Model.Title</p>
+    </div>
+    <a asp-controller="MaintenanceRequest" asp-action="Index" class="btn btn-fp-outline">
+        <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-7">
+        <div class="fp-form-card">
+
+            <div class="p-3 mb-4 rounded-3 d-flex gap-3 align-items-center"
+                 style="background:#f9fafb;border:1px solid #e5e7eb;">
+                <div style="width:42px;height:42px;background:#fffbeb;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="bi bi-building" style="color:#f59e0b;font-size:1.1rem;"></i>
+                </div>
+                <div>
+                    <p style="margin:0;font-weight:600;font-size:0.9rem;">@Model.Title</p>
+                    <p style="margin:0;font-size:0.82rem;color:#6b7280;">
+                        @Model.Facility?.Name — @Model.Facility?.Location
+                    </p>
+                </div>
+            </div>
+
+            @if (Model.Assignment?.Notes != null)
+            {
+                <div class="mb-4 p-3"
+                     style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;">
+                    <p style="font-size:0.8rem;color:#92400e;font-weight:600;margin-bottom:0.3rem;">
+                        <i class="bi bi-sticky me-1"></i> Admin Notes
+                    </p>
+                    <p style="margin:0;font-size:0.88rem;color:#78350f;">@Model.Assignment.Notes</p>
+                </div>
+            }
+
+            <form asp-controller="MaintenanceRequest" asp-action="SubmitFeedback"
+                  asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-4">
+                    <label class="fp-form-label">
+                        <i class="bi bi-chat-left-text me-1"></i> Work Report / Feedback
+                    </label>
+                    <textarea name="feedbackNotes" class="fp-input form-control" rows="4"
+                              placeholder="Describe what was done, parts replaced, time spent..."
+                              required></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="fp-form-label">
+                        <i class="bi bi-flag me-1"></i> Update Job Status
+                    </label>
+                    <select name="status" class="fp-input form-select" required>
+                        <option value="1">In Progress</option>
+                        <option value="2">Resolved</option>
+                        <option value="3">Closed</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="fp-form-label">
+                        <i class="bi bi-camera me-1"></i> Proof Photo
+                        <span style="color:#9ca3af;font-weight:400;">(optional)</span>
+                    </label>
+                    <div style="border:2px dashed #e5e7eb;border-radius:10px;padding:1.5rem;text-align:center;cursor:pointer;"
+                         onclick="document.getElementById('proofPhoto').click()">
+                        <i class="bi bi-cloud-upload display-5 text-muted d-block mb-2"></i>
+                        <p style="color:#6b7280;font-size:0.88rem;margin:0;">
+                            Click to upload a photo as proof of completion
+                        </p>
+                        <p style="color:#9ca3af;font-size:0.78rem;margin:0.3rem 0 0;">
+                            JPG, PNG or WEBP — max 5MB
+                        </p>
+                    </div>
+                    <input type="file" id="proofPhoto" name="proofPhoto"
+                           accept="image/*" class="d-none"
+                           onchange="previewPhoto(this)" />
+                    <div id="photoPreview" class="mt-3 d-none">
+                        <img id="previewImg" src="#" alt="Preview"
+                             style="max-width:100%;border-radius:10px;border:1px solid #e5e7eb;" />
+                        <p id="fileName" style="font-size:0.8rem;color:#6b7280;margin-top:0.5rem;"></p>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-fp-primary px-4">
+                        <i class="bi bi-send-check me-2"></i>Submit Feedback
+                    </button>
+                    <a asp-controller="MaintenanceRequest" asp-action="Index"
+                       class="btn btn-fp-outline px-4">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="fp-card" style="border-left:4px solid #f59e0b;">
+            <h6 style="font-weight:600;color:#92400e;margin-bottom:1rem;">
+                <i class="bi bi-info-circle me-2"></i>Submission Guide
+            </h6>
+            <ul style="font-size:0.88rem;color:#78350f;padding-left:1.2rem;margin:0;line-height:1.9;">
+                <li>Describe all work done clearly</li>
+                <li>Mention any parts replaced or used</li>
+                <li>Set status to <strong>Resolved</strong> if fully fixed</li>
+                <li>Upload a photo showing the completed work</li>
+                <li>Set to <strong>In Progress</strong> if more work is needed</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function previewPhoto(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    document.getElementById('previewImg').src = e.target.result;
+                    document.getElementById('fileName').textContent = input.files[0].name;
+                    document.getElementById('photoPreview').classList.remove('d-none');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+}

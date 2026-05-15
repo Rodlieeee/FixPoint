@@ -22,7 +22,6 @@ namespace FixPoint.Controllers
         {
             var users = _userManager.Users.ToList();
             var userRoles = new Dictionary<string, IList<string>>();
-
             foreach (var user in users)
                 userRoles[user.Id] = await _userManager.GetRolesAsync(user);
 
@@ -31,16 +30,28 @@ namespace FixPoint.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangeRole(string userId, string newRole)
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null) return NotFound();
 
             var currentRoles = await _userManager.GetRolesAsync(user);
-            await _userManager.RemoveFromRolesAsync(user, currentRoles);
-            await _userManager.AddToRoleAsync(user, newRole);
+            var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
+            if (!removeResult.Succeeded)
+            {
+                TempData["Error"] = "Failed to remove existing role.";
+                return RedirectToAction(nameof(Users));
+            }
 
-            TempData["Success"] = $"Role updated to {newRole}!";
+            var addResult = await _userManager.AddToRoleAsync(user, newRole);
+            if (!addResult.Succeeded)
+            {
+                TempData["Error"] = "Failed to assign new role.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            TempData["Success"] = $"Role updated to {newRole} successfully!";
             return RedirectToAction(nameof(Users));
         }
     }

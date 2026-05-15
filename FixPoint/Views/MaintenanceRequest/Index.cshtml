@@ -1,18 +1,40 @@
 ﻿@model IEnumerable<FixPoint.Models.MaintenanceRequest>
-@{ViewData["Title"] = "Maintenance Requests";}
+@{
+    ViewData["Title"] = "Maintenance Requests";
+}
 
 <div class="fp-page-header">
     <div>
-        <h1 class="fp-page-title"><i class="bi bi-clipboard-check me-2 text-warning"></i>Requests</h1>
-        <p class="fp-page-subtitle">All maintenance requests submitted across facilities</p>
+        <h1 class="fp-page-title">
+            <i class="bi bi-clipboard-check me-2 text-warning"></i>Requests
+        </h1>
+        <p class="fp-page-subtitle">
+            All active maintenance requests across facilities
+        </p>
     </div>
-    <a asp-controller="MaintenanceRequest" asp-action="Create" class="btn btn-fp-primary">
-        <i class="bi bi-plus-circle me-2"></i>New Request
-    </a>
+
+    <div class="d-flex gap-2">
+
+        <!-- HISTORY BUTTON -->
+        <a asp-controller="MaintenanceRequest"
+           asp-action="History"
+           class="btn btn-fp-outline">
+            <i class="bi bi-clock-history me-1"></i>History
+        </a>
+
+        <!-- CREATE -->
+        <a asp-controller="MaintenanceRequest"
+           asp-action="Create"
+           class="btn btn-fp-primary">
+            <i class="bi bi-plus-circle me-2"></i>New Request
+        </a>
+
+    </div>
 </div>
 
 <div class="fp-table">
     <table class="table mb-0">
+
         <thead>
             <tr>
                 <th>#</th>
@@ -24,44 +46,61 @@
                 <th>Actions</th>
             </tr>
         </thead>
+
         <tbody>
+
             @if (!Model.Any())
             {
                 <tr>
                     <td colspan="7" class="text-center py-5 text-muted">
                         <i class="bi bi-inbox display-5 d-block mb-2"></i>
-                        No requests found. <a asp-controller="MaintenanceRequest" asp-action="Create">Submit one now</a>
+                        No active requests found.
+                        <a asp-action="Create">Submit one now</a>
                     </td>
                 </tr>
             }
+
             @foreach (var r in Model)
             {
-                var pClass = r.Priority == FixPoint.Models.PriorityLevel.Critical ? "badge-critical" :
+                var pClass =
+                r.Priority == FixPoint.Models.PriorityLevel.Critical ? "badge-critical" :
                 r.Priority == FixPoint.Models.PriorityLevel.High ? "badge-high" :
-                r.Priority == FixPoint.Models.PriorityLevel.Medium ? "badge-medium" : "badge-low";
+                r.Priority == FixPoint.Models.PriorityLevel.Medium ? "badge-medium" :
+                "badge-low";
 
-                var sClass = r.Status == FixPoint.Models.RequestStatus.Open ? "badge-open" :
+                var sClass =
+                r.Status == FixPoint.Models.RequestStatus.Open ? "badge-open" :
                 r.Status == FixPoint.Models.RequestStatus.InProgress ? "badge-inprogress" :
-                r.Status == FixPoint.Models.RequestStatus.Resolved ? "badge-resolved" : "badge-closed";
+                r.Status == FixPoint.Models.RequestStatus.Resolved ? "badge-resolved" :
+                "badge-closed";
 
                 <tr>
-                    <td style="color:#9ca3af;font-size:0.8rem;">#@r.Id</td>
 
-                    <td style="font-weight:500;">@r.Title</td>
+                    <td style="color:#9ca3af;font-size:0.8rem;">
+                        #@r.Id
+                    </td>
+
+                    <td style="font-weight:500;">
+                        @r.Title
+                    </td>
 
                     <td>
-                        <span style="display:flex;align-items:center;gap:6px;">
-                            <i class="bi bi-building text-muted" style="font-size:0.85rem;"></i>
+                        <span class="d-flex align-items-center gap-2">
+                            <i class="bi bi-building text-muted"></i>
                             @r.Facility?.Name
                         </span>
                     </td>
 
                     <td>
-                        <span class="fp-badge @pClass">@r.Priority</span>
+                        <span class="fp-badge @pClass">
+                            @r.Priority
+                        </span>
                     </td>
 
                     <td>
-                        <span class="fp-badge @sClass">@r.Status</span>
+                        <span class="fp-badge @sClass">
+                            @r.Status
+                        </span>
                     </td>
 
                     <td style="color:#6b7280;font-size:0.85rem;">
@@ -71,18 +110,18 @@
                     <td>
                         <div class="d-flex gap-1">
 
-                            <a asp-controller="MaintenanceRequest"
-                               asp-action="Details"
+                            <!-- VIEW -->
+                            <a asp-action="Details"
                                asp-route-id="@r.Id"
                                class="btn btn-sm btn-fp-outline"
                                title="View">
                                 <i class="bi bi-eye"></i>
                             </a>
 
+                            <!-- ADMIN ASSIGN -->
                             @if (User.IsInRole("Admin"))
                             {
-                                <a asp-controller="MaintenanceRequest"
-                                   asp-action="Assign"
+                                <a asp-action="Assign"
                                    asp-route-id="@r.Id"
                                    class="btn btn-sm btn-fp-outline"
                                    title="Assign">
@@ -90,10 +129,27 @@
                                 </a>
                             }
 
+                            <!-- TECHNICIAN FEEDBACK -->
+                            @if (User.IsInRole("Technician")
+                                                    && r.Assignment != null
+                                                    && r.Assignment.TechnicianId == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                                                    && r.Status != FixPoint.Models.RequestStatus.Resolved)
+                            {
+                                <a asp-action="SubmitFeedback"
+                                   asp-route-id="@r.Id"
+                                   class="btn btn-sm btn-warning"
+                                   title="Submit Feedback">
+                                    <i class="bi bi-chat-left-text"></i>
+                                </a>
+                            }
+
                         </div>
                     </td>
+
                 </tr>
             }
+
         </tbody>
+
     </table>
 </div>
