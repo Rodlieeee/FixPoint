@@ -1,4 +1,5 @@
 ﻿@model FixPoint.Models.Facility
+<<<<<<< HEAD
 
 @{
     ViewData["Title"] = "Create";
@@ -36,8 +37,90 @@
 
 <div>
     <a asp-action="Index">Back to List</a>
+=======
+@{ViewData["Title"] = "Add Facility";}
+
+<div class="fp-page-header">
+    <div>
+        <h1 class="fp-page-title">
+            <i class="bi bi-building-add me-2 text-warning"></i>Add Facility
+        </h1>
+        <p class="fp-page-subtitle">Register a new facility to the system</p>
+    </div>
+    <a asp-controller="Facility" asp-action="Index" class="btn btn-fp-outline">
+        <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-7">
+        <div class="fp-form-card">
+            <form asp-controller="Facility" asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly"
+                     class="alert mb-3"
+                     style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;color:#b91c1c;font-size:0.88rem;"></div>
+
+                <div class="mb-4">
+                    <label class="fp-form-label">
+                        <i class="bi bi-building me-1"></i> Facility Name
+                    </label>
+                    <input asp-for="Name" class="fp-input form-control"
+                           placeholder="e.g. Main Building, Gym, Server Room" />
+                    <span asp-validation-for="Name" class="text-danger"
+                          style="font-size:0.8rem;"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label class="fp-form-label">
+                        <i class="bi bi-geo-alt me-1"></i> Location
+                    </label>
+                    <input asp-for="Location" class="fp-input form-control"
+                           placeholder="e.g. Ground Floor, Block A, Basement" />
+                    <span asp-validation-for="Location" class="text-danger"
+                          style="font-size:0.8rem;"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label class="fp-form-label">
+                        <i class="bi bi-card-text me-1"></i> Description
+                        <span style="color:#9ca3af;font-weight:400;">(optional)</span>
+                    </label>
+                    <textarea asp-for="Description" class="fp-input form-control" rows="3"
+                        placeholder="Brief description of this facility..."></textarea>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-fp-primary px-4">
+                        <i class="bi bi-save me-2"></i>Save Facility
+                    </button>
+                    <a asp-controller="Facility" asp-action="Index"
+                       class="btn btn-fp-outline px-4">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="fp-card" style="background:#fffbeb;border-color:#fde68a;">
+            <h6 style="color:#92400e;font-weight:600;margin-bottom:1rem;">
+                <i class="bi bi-lightbulb me-2"></i>Tips
+            </h6>
+            <ul style="font-size:0.88rem;color:#78350f;padding-left:1.2rem;margin:0;line-height:1.9;">
+                <li>Use a clear, recognizable <strong>name</strong></li>
+                <li>Be specific with the <strong>location</strong> (floor, wing, block)</li>
+                <li>Add a description to help staff identify it</li>
+                <li>Each facility can have multiple maintenance requests</li>
+            </ul>
+        </div>
+    </div>
+>>>>>>> c18d0b0 (Updated the Feedback button and the UI of add facility)
 </div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> c18d0b0 (Updated the Feedback button and the UI of add facility)

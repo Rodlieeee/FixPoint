@@ -1,4 +1,5 @@
 ﻿@model FixPoint.Models.Facility
+<<<<<<< HEAD
 
 @{
     ViewData["Title"] = "Edit";
@@ -42,3 +43,77 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }
+=======
+@{
+    ViewData["Title"] = "Edit Facility";
+}
+
+<div class="fp-page-header">
+    <div>
+        <h1 class="fp-page-title">
+            <i class="bi bi-pencil-square me-2 text-warning"></i>Edit Facility
+        </h1>
+        <p class="fp-page-subtitle">Update facility information</p>
+    </div>
+    <a asp-controller="Facility" asp-action="Index" class="btn btn-fp-outline">
+        <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-7">
+        <div class="fp-form-card">
+            <form asp-controller="Facility" asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+                <div asp-validation-summary="ModelOnly"
+                     class="alert mb-3"
+                     style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;color:#b91c1c;font-size:0.88rem;"></div>
+
+                <div class="mb-4">
+                    <label class="fp-form-label">
+                        <i class="bi bi-building me-1"></i> Facility Name
+                    </label>
+                    <input asp-for="Name" class="fp-input form-control"
+                           placeholder="e.g. Main Building" />
+                    <span asp-validation-for="Name" class="text-danger"
+                          style="font-size:0.8rem;"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label class="fp-form-label">
+                        <i class="bi bi-geo-alt me-1"></i> Location
+                    </label>
+                    <input asp-for="Location" class="fp-input form-control"
+                           placeholder="e.g. Ground Floor" />
+                    <span asp-validation-for="Location" class="text-danger"
+                          style="font-size:0.8rem;"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label class="fp-form-label">
+                        <i class="bi bi-card-text me-1"></i> Description
+                        <span style="color:#9ca3af;font-weight:400;">(optional)</span>
+                    </label>
+                    <textarea asp-for="Description" class="fp-input form-control"
+                              rows="3"></textarea>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-fp-primary px-4">
+                        <i class="bi bi-save me-2"></i>Update Facility
+                    </button>
+                    <a asp-controller="Facility" asp-action="Index"
+                       class="btn btn-fp-outline px-4">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+>>>>>>> c18d0b0 (Updated the Feedback button and the UI of add facility)

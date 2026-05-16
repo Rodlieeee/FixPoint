@@ -12,29 +12,22 @@
             All active maintenance requests across facilities
         </p>
     </div>
-
     <div class="d-flex gap-2">
-
-        <!-- HISTORY BUTTON -->
         <a asp-controller="MaintenanceRequest"
            asp-action="History"
            class="btn btn-fp-outline">
             <i class="bi bi-clock-history me-1"></i>History
         </a>
-
-        <!-- CREATE -->
         <a asp-controller="MaintenanceRequest"
            asp-action="Create"
            class="btn btn-fp-primary">
             <i class="bi bi-plus-circle me-2"></i>New Request
         </a>
-
     </div>
 </div>
 
 <div class="fp-table">
     <table class="table mb-0">
-
         <thead>
             <tr>
                 <th>#</th>
@@ -42,20 +35,23 @@
                 <th>Facility</th>
                 <th>Priority</th>
                 <th>Status</th>
+                <th>Assigned To</th>
                 <th>Date</th>
                 <th>Actions</th>
             </tr>
         </thead>
-
         <tbody>
-
             @if (!Model.Any())
             {
                 <tr>
-                    <td colspan="7" class="text-center py-5 text-muted">
+                    <td colspan="8" class="text-center py-5 text-muted">
                         <i class="bi bi-inbox display-5 d-block mb-2"></i>
                         No active requests found.
-                        <a asp-action="Create">Submit one now</a>
+                        <a asp-controller="MaintenanceRequest"
+                           asp-action="Create"
+                           style="color:#f59e0b;font-weight:600;">
+                            Submit one now
+                        </a>
                     </td>
                 </tr>
             }
@@ -74,33 +70,59 @@
                 r.Status == FixPoint.Models.RequestStatus.Resolved ? "badge-resolved" :
                 "badge-closed";
 
+                var currentUserId = User
+                .FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+                var isMine = r.Assignment?.TechnicianId == currentUserId;
+
+                var canFeedback = User.IsInRole("Technician")
+                && r.Assignment != null
+                && isMine
+                && r.Status != FixPoint.Models.RequestStatus.Resolved
+                && r.Status != FixPoint.Models.RequestStatus.Closed;
+
                 <tr>
+                    <td style="color:#9ca3af;font-size:0.8rem;">#@r.Id</td>
 
-                    <td style="color:#9ca3af;font-size:0.8rem;">
-                        #@r.Id
-                    </td>
-
-                    <td style="font-weight:500;">
-                        @r.Title
-                    </td>
+                    <td style="font-weight:500;">@r.Title</td>
 
                     <td>
-                        <span class="d-flex align-items-center gap-2">
-                            <i class="bi bi-building text-muted"></i>
+                        <span style="display:flex;align-items:center;gap:6px;">
+                            <i class="bi bi-building text-muted"
+                               style="font-size:0.85rem;"></i>
                             @r.Facility?.Name
                         </span>
                     </td>
 
                     <td>
-                        <span class="fp-badge @pClass">
-                            @r.Priority
-                        </span>
+                        <span class="fp-badge @pClass">@r.Priority</span>
                     </td>
 
                     <td>
-                        <span class="fp-badge @sClass">
-                            @r.Status
-                        </span>
+                        <span class="fp-badge @sClass">@r.Status</span>
+                    </td>
+
+                    <td>
+                        @if (r.Assignment?.Technician != null)
+                        {
+                            <div style="display:flex;align-items:center;gap:6px;">
+                                <div style="width:26px;height:26px;border-radius:50%;
+                                                    background:#fffbeb;display:flex;
+                                                    align-items:center;justify-content:center;
+                                                    font-size:0.7rem;font-weight:600;color:#b45309;">
+                                    @r.Assignment.Technician.FullName[0].ToString().ToUpper()
+                                </div>
+                                <span style="font-size:0.85rem;">
+                                    @r.Assignment.Technician.FullName
+                                </span>
+                            </div>
+                        }
+                        else
+                        {
+                            <span style="font-size:0.82rem;color:#9ca3af;">
+                                <i class="bi bi-dash"></i> Unassigned
+                            </span>
+                        }
                     </td>
 
                     <td style="color:#6b7280;font-size:0.85rem;">
@@ -108,36 +130,36 @@
                     </td>
 
                     <td>
-                        <div class="d-flex gap-1">
+                        <div class="d-flex gap-1 align-items-center">
 
                             <!-- VIEW -->
-                            <a asp-action="Details"
+                            <a asp-controller="MaintenanceRequest"
+                               asp-action="Details"
                                asp-route-id="@r.Id"
                                class="btn btn-sm btn-fp-outline"
-                               title="View">
+                               title="View Details">
                                 <i class="bi bi-eye"></i>
                             </a>
 
-                            <!-- ADMIN ASSIGN -->
+                            <!-- ADMIN: ASSIGN -->
                             @if (User.IsInRole("Admin"))
                             {
-                                <a asp-action="Assign"
+                                <a asp-controller="MaintenanceRequest"
+                                   asp-action="Assign"
                                    asp-route-id="@r.Id"
                                    class="btn btn-sm btn-fp-outline"
-                                   title="Assign">
+                                   title="Assign Technician">
                                     <i class="bi bi-person-check"></i>
                                 </a>
                             }
 
-                            <!-- TECHNICIAN FEEDBACK -->
-                            @if (User.IsInRole("Technician")
-                                                    && r.Assignment != null
-                                                    && r.Assignment.TechnicianId == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                                                    && r.Status != FixPoint.Models.RequestStatus.Resolved)
+                            <!-- TECHNICIAN: FEEDBACK (icon only) -->
+                            @if (canFeedback)
                             {
-                                <a asp-action="SubmitFeedback"
+                                <a asp-controller="MaintenanceRequest"
+                                   asp-action="SubmitFeedback"
                                    asp-route-id="@r.Id"
-                                   class="btn btn-sm btn-warning"
+                                   class="btn btn-sm btn-fp-primary"
                                    title="Submit Feedback">
                                     <i class="bi bi-chat-left-text"></i>
                                 </a>
@@ -145,11 +167,8 @@
 
                         </div>
                     </td>
-
                 </tr>
             }
-
         </tbody>
-
     </table>
 </div>
