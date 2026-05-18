@@ -5,10 +5,23 @@
 
 <div class="fp-page-header">
     <div>
-        <h1 class="fp-page-title"><i class="bi bi-people me-2 text-warning"></i>Users</h1>
-        <p class="fp-page-subtitle">Manage user roles and permissions</p>
+        <h1 class="fp-page-title">
+            <i class="bi bi-people me-2 text-warning"></i>Manage Users
+        </h1>
+        <p class="fp-page-subtitle">Control user roles and account status</p>
     </div>
 </div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert d-flex align-items-center gap-2 mb-4"
+         style="background:#fef2f2;border:1px solid #fecaca;
+                    border-radius:10px;color:#b91c1c;">
+        <i class="bi bi-exclamation-circle-fill text-danger"></i>
+        <span>@TempData["Error"]</span>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+}
 
 <div class="fp-table">
     <table class="table mb-0">
@@ -16,8 +29,10 @@
             <tr>
                 <th>User</th>
                 <th>Email</th>
-                <th>Current Role</th>
+                <th>Role</th>
+                <th>Status</th>
                 <th>Change Role</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -25,32 +40,138 @@
             {
                 var roles = ViewBag.UserRoles[user.Id] as IList<string>;
                 var currentRole = roles != null && roles.Count > 0 ? roles[0] : "None";
+                var isActive = (bool)ViewBag.UserStatus[user.Id];
+
                 var roleColor = currentRole == "Admin" ? "badge-critical" :
-                currentRole == "Technician" ? "badge-inprogress" : "badge-open";
-                <tr>
+                currentRole == "Technician" ? "badge-inprogress" :
+                "badge-open";
+
+                var rowOpacity = isActive ? "1" : "0.6";
+                var avatarBg = isActive ? "#f3f4f6" : "#fee2e2";
+                var avatarColor = isActive ? "#374151" : "#ef4444";
+
+                <tr style="opacity:@rowOpacity;">
                     <td>
                         <div class="d-flex align-items-center gap-2">
-                            <div style="width:34px;height:34px;border-radius:50%;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:0.8rem;color:#374151;">
-                                @(user.FullName?.Length > 0 ? user.FullName[0].ToString().ToUpper() : "?")
+                            <div style="width:34px;height:34px;border-radius:50%;
+                                            background:@avatarBg;display:flex;
+                                            align-items:center;justify-content:center;
+                                            font-weight:600;font-size:0.8rem;
+                                            color:@avatarColor;">
+                                @(user.FullName?.Length > 0
+                                                            ? user.FullName[0].ToString().ToUpper() : "?")
+                        </div>
+                        <div>
+                            <p style="margin:0;font-weight:500;font-size:0.9rem;">
+                                @user.FullName
+                            </p>
+                            @if (!isActive)
+                                {
+                                    <p style="margin:0;font-size:0.75rem;color:#ef4444;">
+                                        <i class="bi bi-lock me-1"></i>Deactivated
+                                    </p>
+                                }
                             </div>
-                            <span style="font-weight:500;">@user.FullName</span>
                         </div>
                     </td>
+
                     <td style="color:#6b7280;font-size:0.88rem;">@user.Email</td>
-                    <td><span class="fp-badge @roleColor">@currentRole</span></td>
+
                     <td>
-                        <form asp-controller="Admin" asp-action="ChangeRole" method="post" class="d-flex gap-2 align-items-center">
+                        <span class="fp-badge @roleColor">@currentRole</span>
+                    </td>
+
+                    <td>
+                        @if (isActive)
+                        {
+                            <span class="fp-badge badge-resolved">
+                                <i class="bi bi-check-circle me-1"></i>Active
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="fp-badge badge-closed">
+                                <i class="bi bi-lock me-1"></i>Inactive
+                            </span>
+                        }
+                    </td>
+
+                    <td>
+                        <form asp-controller="Admin" asp-action="ChangeRole"
+                              method="post" class="d-flex gap-2 align-items-center">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="userId" value="@user.Id" />
-                            <select name="newRole" class="form-select form-select-sm" style="width:140px;border-radius:8px;border:1px solid #e5e7eb;">
-                                <option value="Admin">Admin</option>
-                                <option value="Technician">Technician</option>
-                                <option value="User">User</option>
-                            </select>
-                            <button type="submit" class="btn btn-fp-primary btn-sm px-3">
-                                <i class="bi bi-save me-1"></i>Save
-                            </button>
+
+                            @if (isActive)
+                            {
+                                <select name="newRole"
+                                        class="form-select form-select-sm"
+                                        style="width:140px;border-radius:8px;
+                                                       border:1px solid #e5e7eb;">
+                                    <option value="Admin">Admin</option>
+                                    <option value="Technician">Technician</option>
+                                    <option value="User">User</option>
+                                </select>
+                                <button type="submit"
+                                        class="btn btn-fp-primary btn-sm px-3">
+                                    <i class="bi bi-save me-1"></i>Save
+                                </button>
+                            }
+                            else
+                            {
+                                <select name="newRole"
+                                        class="form-select form-select-sm"
+                                        style="width:140px;border-radius:8px;
+                                                       border:1px solid #e5e7eb;"
+                                        disabled>
+                                    <option value="Admin">Admin</option>
+                                    <option value="Technician">Technician</option>
+                                    <option value="User">User</option>
+                                </select>
+                            }
                         </form>
+                    </td>
+
+                    <td>
+                        @if (user.Email != "admin@fixpoint.com")
+                        {
+                            @if (isActive)
+                            {
+                                <form asp-controller="Admin"
+                                      asp-action="Deactivate"
+                                      method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="userId" value="@user.Id" />
+                                    <button type="submit"
+                                            class="btn btn-sm btn-fp-outline"
+                                            style="color:#ef4444;border-color:#fecaca;"
+                                            title="Deactivate User">
+                                        <i class="bi bi-lock"></i>
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form asp-controller="Admin"
+                                      asp-action="Reactivate"
+                                      method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="userId" value="@user.Id" />
+                                    <button type="submit"
+                                            class="btn btn-sm btn-fp-outline"
+                                            style="color:#10b981;border-color:#a7f3d0;"
+                                            title="Reactivate User">
+                                        <i class="bi bi-unlock"></i>
+                                    </button>
+                                </form>
+                            }
+                        }
+                        else
+                        {
+                            <span style="font-size:0.78rem;color:#9ca3af;">
+                                <i class="bi bi-shield-check me-1"></i>Protected
+                            </span>
+                        }
                     </td>
                 </tr>
             }

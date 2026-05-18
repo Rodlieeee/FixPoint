@@ -17,19 +17,15 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // =========================
 // IDENTITY
 // =========================
-builder.Services
-    .AddIdentity<ApplicationUser, IdentityRole>(options =>
-    {
-        options.SignIn.RequireConfirmedAccount = false;
-
-        // Password settings
-        options.Password.RequireDigit = false;
-        options.Password.RequireUppercase = false;
-        options.Password.RequireNonAlphanumeric = false;
-        options.Password.RequiredLength = 6;
-    })
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders();
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = false;
+    options.Lockout.AllowedForNewUsers = true;        // ← add
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.MaxValue; // ← add
+    options.Lockout.MaxFailedAccessAttempts = 5;      // ← add
+})
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders();
 
 
 // =========================
