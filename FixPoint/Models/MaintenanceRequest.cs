@@ -34,5 +34,7 @@ namespace FixPoint.Models
 
         // Navigation to assignment
         public Assignment? Assignment { get; set; }
+
+      
     }
 }

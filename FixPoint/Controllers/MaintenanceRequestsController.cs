@@ -62,6 +62,7 @@ namespace FixPoint.Controllers
                 requests = await _context.MaintenanceRequests
                     .Include(r => r.Facility)
                     .Include(r => r.Assignment)
+                        .ThenInclude(a => a.Technician)
                     .Where(r =>
                         r.Status != RequestStatus.Resolved &&
                         r.ReportedById == user.Id)
@@ -85,6 +86,7 @@ namespace FixPoint.Controllers
             return View(request);
         }
 
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> Create()
         {
             ViewBag.Facilities = new SelectList(
@@ -93,6 +95,7 @@ namespace FixPoint.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,User")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(MaintenanceRequest request)
         {
@@ -196,41 +199,54 @@ namespace FixPoint.Controllers
         [HttpPost]
         [Authorize(Roles = "Technician")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SubmitFeedback(int id, string feedbackNotes, IFormFile? proofPhoto)
+        public async Task<IActionResult> SubmitFeedback(
+        int id,
+        string feedbackNotes,
+        RequestStatus status,
+        IFormFile? proofPhoto)
         {
             var request = await _context.MaintenanceRequests
                 .Include(r => r.Assignment)
                 .FirstOrDefaultAsync(r => r.Id == id);
 
-            if (request == null) return NotFound();
+            if (request == null)
+                return NotFound();
 
             var user = await _userManager.GetUserAsync(User);
+
             if (request.Assignment?.TechnicianId != user.Id)
                 return Forbid();
 
+            // Upload proof photo
             if (proofPhoto != null && proofPhoto.Length > 0)
             {
                 var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads", "proofs");
+
                 Directory.CreateDirectory(uploadsFolder);
 
                 var uniqueFileName = $"{Guid.NewGuid()}_{proofPhoto.FileName}";
                 var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
                 using (var stream = new FileStream(filePath, FileMode.Create))
+                {
                     await proofPhoto.CopyToAsync(stream);
+                }
 
-                request.Assignment.ProofPhotoPath = $"/uploads/proofs/{uniqueFileName}";
+                request.Assignment.ProofPhotoPath =
+                    $"/uploads/proofs/{uniqueFileName}";
             }
 
+            // Save feedback
             request.Assignment.FeedbackNotes = feedbackNotes;
             request.Assignment.FeedbackSubmittedAt = DateTime.Now;
 
-            // ✅ FINAL FIX
-            request.Status = RequestStatus.Resolved;
+            // Use selected dropdown status
+            request.Status = status;
 
             await _context.SaveChangesAsync();
 
             TempData["Success"] = "Feedback submitted successfully!";
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -273,6 +289,7 @@ namespace FixPoint.Controllers
                     .Include(r => r.Facility)
                     .Include(r => r.ReportedBy)
                     .Include(r => r.Assignment)
+                        .ThenInclude(a => a.Technician)
                     .Where(r =>
                         r.Status == RequestStatus.Resolved &&
                         r.Assignment != null &&
@@ -285,6 +302,7 @@ namespace FixPoint.Controllers
                 history = await _context.MaintenanceRequests
                     .Include(r => r.Facility)
                     .Include(r => r.Assignment)
+                        .ThenInclude(a => a.Technician)
                     .Where(r =>
                         r.Status == RequestStatus.Resolved &&
                         r.ReportedById == user.Id)

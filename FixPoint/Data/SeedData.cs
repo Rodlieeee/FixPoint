@@ -7,20 +7,33 @@ namespace FixPoint.Data
     {
         public static async Task InitializeAsync(IServiceProvider services)
         {
-            var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-            var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+            // ✅ Create scope (IMPORTANT FIX)
+            using var scope = services.CreateScope();
 
-            // Create roles
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+            // =========================
+            // CREATE ROLES
+            // =========================
             string[] roles = { "Admin", "Technician", "User" };
+
             foreach (var role in roles)
             {
                 if (!await roleManager.RoleExistsAsync(role))
+                {
                     await roleManager.CreateAsync(new IdentityRole(role));
+                }
             }
 
-            // Create default admin
+            // =========================
+            // CREATE DEFAULT ADMIN
+            // =========================
             var adminEmail = "admin@fixpoint.com";
-            if (await userManager.FindByEmailAsync(adminEmail) == null)
+
+            var existingAdmin = await userManager.FindByEmailAsync(adminEmail);
+
+            if (existingAdmin == null)
             {
                 var admin = new ApplicationUser
                 {
@@ -29,9 +42,13 @@ namespace FixPoint.Data
                     FullName = "System Admin",
                     EmailConfirmed = true
                 };
+
                 var result = await userManager.CreateAsync(admin, "Admin@123");
+
                 if (result.Succeeded)
+                {
                     await userManager.AddToRoleAsync(admin, "Admin");
+                }
             }
         }
     }

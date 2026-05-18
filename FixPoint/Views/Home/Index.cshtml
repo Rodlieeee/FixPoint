@@ -27,9 +27,18 @@
         }
         else
         {
-            <a asp-controller="MaintenanceRequest" asp-action="Create" class="btn btn-fp-primary px-4 py-2">
-                <i class="bi bi-plus-circle me-2"></i>Submit a Request
-            </a>
+            @if (User.IsInRole("Admin") || User.IsInRole("Technician"))
+            {
+                <a asp-controller="MaintenanceRequest" asp-action="Index" class="btn btn-fp-primary px-4 py-2">
+                    <i class="bi bi-eye me-2"></i>See Requests
+                </a>
+            }
+            else
+            {
+                <a asp-controller="MaintenanceRequest" asp-action="Create" class="btn btn-fp-primary px-4 py-2">
+                    <i class="bi bi-plus-circle me-2"></i>Submit a Request
+                </a>
+            }
         }
     </div>
 </div>
@@ -40,8 +49,8 @@
             <div style="width:52px;height:52px;background:#fffbeb;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
                 <i class="bi bi-send-check" style="font-size:1.4rem;color:#f59e0b;"></i>
             </div>
-            <h5 class="fw-700 mb-2">Submit Requests</h5>
-            <p class="text-muted mb-0" style="font-size:0.9rem;">Quickly report any maintenance issue across all your facilities.</p>
+            <h5 class="fw-700 mb-2">Track Requests</h5>
+            <p class="text-muted mb-0" style="font-size:0.9rem;">Quickly check any active maintenance issue across all your facilities.</p>
         </div>
     </div>
     <div class="col-md-4">

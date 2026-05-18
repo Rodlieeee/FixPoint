@@ -18,11 +18,15 @@
            class="btn btn-fp-outline">
             <i class="bi bi-clock-history me-1"></i>History
         </a>
-        <a asp-controller="MaintenanceRequest"
-           asp-action="Create"
-           class="btn btn-fp-primary">
-            <i class="bi bi-plus-circle me-2"></i>New Request
-        </a>
+
+        @if (!User.IsInRole("Admin") && !User.IsInRole("Technician"))
+        {
+            <a asp-controller="MaintenanceRequest"
+               asp-action="Create"
+               class="btn btn-fp-primary">
+                <i class="bi bi-plus-circle me-2"></i>New Request
+            </a>
+        }
     </div>
 </div>
 
@@ -47,11 +51,15 @@
                     <td colspan="8" class="text-center py-5 text-muted">
                         <i class="bi bi-inbox display-5 d-block mb-2"></i>
                         No active requests found.
-                        <a asp-controller="MaintenanceRequest"
-                           asp-action="Create"
-                           style="color:#f59e0b;font-weight:600;">
-                            Submit one now
-                        </a>
+
+                        @if (!User.IsInRole("Admin") && !User.IsInRole("Technician"))
+                        {
+                            <a asp-controller="MaintenanceRequest"
+                               asp-action="Create"
+                               style="color:#f59e0b;font-weight:600;">
+                                Submit one now
+                            </a>
+                        }
                     </td>
                 </tr>
             }
@@ -107,9 +115,9 @@
                         {
                             <div style="display:flex;align-items:center;gap:6px;">
                                 <div style="width:26px;height:26px;border-radius:50%;
-                                                    background:#fffbeb;display:flex;
-                                                    align-items:center;justify-content:center;
-                                                    font-size:0.7rem;font-weight:600;color:#b45309;">
+                                                            background:#fffbeb;display:flex;
+                                                            align-items:center;justify-content:center;
+                                                            font-size:0.7rem;font-weight:600;color:#b45309;">
                                     @r.Assignment.Technician.FullName[0].ToString().ToUpper()
                                 </div>
                                 <span style="font-size:0.85rem;">
@@ -132,7 +140,6 @@
                     <td>
                         <div class="d-flex gap-1 align-items-center">
 
-                            <!-- VIEW -->
                             <a asp-controller="MaintenanceRequest"
                                asp-action="Details"
                                asp-route-id="@r.Id"
@@ -141,7 +148,6 @@
                                 <i class="bi bi-eye"></i>
                             </a>
 
-                            <!-- ADMIN: ASSIGN -->
                             @if (User.IsInRole("Admin"))
                             {
                                 <a asp-controller="MaintenanceRequest"
@@ -153,7 +159,6 @@
                                 </a>
                             }
 
-                            <!-- TECHNICIAN: FEEDBACK (icon only) -->
                             @if (canFeedback)
                             {
                                 <a asp-controller="MaintenanceRequest"

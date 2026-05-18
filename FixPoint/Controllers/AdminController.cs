@@ -47,6 +47,13 @@ namespace FixPoint.Controllers
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null) return NotFound();
 
+            // Prevent changing the role of the system core administrator account
+            if (user.Email != null && user.Email.Equals("admin@fixpoint.com", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["Error"] = "The system core administrator account role cannot be modified.";
+                return RedirectToAction(nameof(Users));
+            }
+
             var currentRoles = await _userManager.GetRolesAsync(user);
             await _userManager.RemoveFromRolesAsync(user, currentRoles);
             await _userManager.AddToRoleAsync(user, newRole);
@@ -62,8 +69,8 @@ namespace FixPoint.Controllers
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null) return NotFound();
 
-            // Prevent admin from deactivating themselves
-            if (user.Email == "admin@fixpoint.com")
+            // Prevent admin from deactivating themselves / core admin account
+            if (user.Email != null && user.Email.Equals("admin@fixpoint.com", StringComparison.OrdinalIgnoreCase))
             {
                 TempData["Error"] = "You cannot deactivate the system admin!";
                 return RedirectToAction(nameof(Users));
